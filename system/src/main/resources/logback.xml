@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!-- 日志最大的历史 30天 -->
+    <property name="log.maxHistory" value="1"/>
+    <!-- 定义日志文件 输入位置 -->
+    <property name="log.filePath" value="C:/log"/>
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss:SSS}[%thread]%-5level%logger{50}-%msg%n"/>
+    <!-- INFO 级别的日志-->
+    <appender name="infoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 文件路径 -->
+    <file>${log.filePath}/info.txt</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+    <!-- 文件名称-->
+    <fileNamePattern>${log.filePath}/info.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+    <!-- 文件最大保存历史数量 -->
+    <maxHistory>${log.maxHistory}</maxHistory>
+    </rollingPolicy>
+    <encoder>
+    <pattern>${log.pattern}</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+    <level>INFO</level>
+    <onMismatch>DENY</onMismatch>
+    </filter>
+    </appender>
+    <!--<appender name="permission" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+        <!--<file>${catalina.home}/logs/permission.log</file>-->
+        <!--<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+            <!--<FileNamePattern>${catalina.home}/logs/permission.%d{yyyy-MM-dd}.log.gz</FileNamePattern>-->
+        <!--</rollingPolicy>-->
+        <!--<layout class="ch.qos.logback.classic.PatternLayout">-->
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>-->
+        <!--</layout>-->
+    <!--</appender>-->
+    <!---->
+    <!--<logger name="xxx" level="INFO">-->
+        <!--<appender-ref ref="permission"/>-->
+    <!--</logger>-->
+
+    <!-- TRACE < DEBUG < INFO < WARN < ERROR -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="infoAppender"/>
+    </root>
+
+</configuration>

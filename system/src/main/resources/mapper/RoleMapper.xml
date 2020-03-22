@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsRoleDao">
+    <select id="findRoleCount" resultType="int">
+        SELECT COUNT(id) FROM sys_role
+    </select>
+    <select id="findAllRole" resultType="com.gy.entity.SysRole">
+        SELECT id,rolename FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_role) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <insert id="saveRole" parameterType="com.gy.entity.SysRole">
+        INSERT INTO sys_role
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="roleName != null">
+                rolename,
+            </if>
+            <if test="remark != null">
+                remark,
+            </if>
+            <if test="operator != null">
+                operator,
+            </if>
+            <if test="operateTime != null">
+                operate_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="roleName != null">
+                #{roleName,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="operator != null">
+                #{operator,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findByRolename" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM sys_role WHERE rolename=#{roleName}
+    </select>
+
+    <select id="findRoleById" parameterType="Integer" resultType="com.gy.entity.SysRole">
+        SELECT * FROM sys_role WHERE id=#{roleId}
+    </select>
+
+    <update id="updateSysRole" parameterType="com.gy.entity.SysRole">
+        UPDATE sys_role SET rolename=#{roleName} WHERE id=#{id}
+    </update>
+
+    <delete id="deleteSysRole" parameterType="Integer">
+        DELETE FROM sys_role WHERE id=#{roleId}
+    </delete>
+
+    <select id="findAllRoles" resultType="com.gy.entity.SysRole">
+        SELECT * FROM sys_role
+    </select>
+    
+    <insert id="saveRolePermission">
+        INSERT INTO sys_role_permission(roleid,permissionid) VALUES
+        <foreach collection="permissionids" item="permissionid" separator=",">
+            ( #{roleId,jdbcType=INTEGER}, #{permissionid,jdbcType=INTEGER} )
+        </foreach>
+    </insert>
+
+    <delete id="deleteRolePermission" parameterType="Integer">
+        DELETE FROM sys_role_permission WHERE roleid=#{roleId}
+    </delete>
+</mapper>

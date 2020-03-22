@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsTemplateDao">
+    <select id="findTemplate" resultType="int">
+        SELECT count(id) FROM sys_sms_template
+    </select>
+    <select id="findAllTemplate" resultType="com.gy.entity.SmsTemplate">
+        SELECT id,template_id,template_name,type,send_content,describe,channel,operate_time,price,is_audit,is_variable,cp FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_template) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findChannel" resultType="com.gy.entity.SmsChannel">
+        SELECT account,price FROM sys_sms_channel
+    </select>
+
+    <select id="findCp" resultType="com.gy.entity.SmsCp">
+        SELECT account,name FROM sys_sms_cp
+    </select>
+
+    <insert id="saveTemplate" parameterType="com.gy.entity.SmsTemplate">
+        INSERT INTO sys_sms_template
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="templateId != null">
+                template_id,
+            </if>
+            <if test="templateName != null">
+                template_name,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="sendContent != null">
+                send_content,
+            </if>
+            <if test="describe != null">
+                describe,
+            </if>
+            <if test="channel != null">
+                channel,
+            </if>
+            <if test="cp != null">
+                cp,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="isAudit != null">
+                is_audit,
+            </if>
+            <if test="isVariable != null">
+                is_variable,
+            </if>
+            <if test="operator != null">
+                operator,
+            </if>
+            <if test="operateTime != null">
+                operate_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="templateId != null">
+                #{templateId,jdbcType=VARCHAR},
+            </if>
+            <if test="templateName != null">
+                #{templateName,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="sendContent != null">
+                #{sendContent,jdbcType=VARCHAR},
+            </if>
+            <if test="describe != null">
+                #{describe,jdbcType=VARCHAR},
+            </if>
+            <if test="channel != null">
+                #{channel,jdbcType=VARCHAR},
+            </if>
+            <if test="cp != null">
+                #{cp,jdbcType=VARCHAR},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=VARCHAR},
+            </if>
+            <if test="isAudit != null">
+                #{isAudit,jdbcType=VARCHAR},
+            </if>
+            <if test="isVariable != null">
+                #{isVariable,jdbcType=VARCHAR},
+            </if>
+            <if test="operator != null">
+                #{operator,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findTemplateById" parameterType="Integer" resultType="com.gy.entity.SmsTemplate">
+        SELECT * FROM sys_sms_template WHERE id=#{templateId}
+    </select>
+
+    <update id="updateTemplate" parameterType="com.gy.entity.SmsTemplate">
+        UPDATE sys_sms_template SET template_id=#{templateId},template_name=#{templateName},type=#{type},send_content=#{sendContent},describe=#{describe},channel=#{channel},price=#{price},cp=#{cp},is_audit=#{isAudit},is_variable=#{isVariable} WHERE id=#{id}
+    </update>
+
+    <delete id="deleteTemplate" parameterType="Integer">
+        DELETE FROM sys_sms_template WHERE id=#{templateId}
+    </delete>
+
+</mapper>

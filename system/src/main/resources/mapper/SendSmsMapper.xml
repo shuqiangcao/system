@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SendSmsDao">
+    <select id="findAllCp" resultType="com.gy.entity.SmsCp">
+        SELECT * FROM sys_sms_cp
+    </select>
+    <select id="findSendTemplate" resultType="com.gy.entity.SmsTemplate">
+        SELECT * from sys_sms_template
+    </select>
+
+    <select id="findAllCpByname" resultType="com.gy.entity.SmsCp">
+        SELECT * FROM sys_sms_cp WHERE account=#{cpName}
+    </select>
+    <select id="findSendTemplateByname" resultType="com.gy.entity.SmsTemplate">
+        SELECT * from sys_sms_template WHERE cp=#{cpName}
+    </select>
+
+    <select id="findTempById" resultType="com.gy.entity.SmsTemplate">
+        SELECT * FROM sys_sms_template WHERE id=#{id}
+    </select>
+
+    <insert id="saveAudit" parameterType="com.gy.entity.SmsAudit">
+        INSERT INTO sys_sms_audit
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="cp != null">
+                cp,
+            </if>
+            <if test="channel != null">
+                channel,
+            </if>
+            <if test="templateId != null">
+                template_id,
+            </if>
+            <if test="mobileCount != null">
+                mobile_count,
+            </if>
+            <if test="mobile != null">
+                mobile,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="variable != null">
+                variable,
+            </if>
+            <if test="taskId != null">
+                taskid,
+            </if>
+            <if test="sendTime != null">
+               send_time,
+            </if>
+            <if test="operateTime != null">
+                operate_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="cp != null">
+                #{cp,jdbcType=VARCHAR},
+            </if>
+            <if test="channel != null">
+                #{channel,jdbcType=VARCHAR},
+            </if>
+            <if test="templateId != null">
+                #{templateId,jdbcType=VARCHAR},
+            </if>
+            <if test="mobileCount != null">
+                #{mobileCount,jdbcType=VARCHAR},
+            </if>
+            <if test="mobile != null">
+                #{mobile,jdbcType=VARCHAR},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="variable != null">
+                #{variable,jdbcType=VARCHAR},
+            </if>
+            <if test="taskId != null">
+                #{taskId,jdbcType=VARCHAR},
+            </if>
+            <if test="sendTime != null">
+                #{sendTime,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findAllAudit" resultType="com.gy.entity.SmsAudit">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_audit WHERE operate_time &gt; #{begintime} AND operate_time &lt; #{endtime}) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findPageSum" resultType="int">
+        SELECT COUNT(id) FROM sys_sms_audit WHERE operate_time &gt; #{begintime} AND operate_time &lt; #{endtime}
+    </select>
+
+    <select id="findCpPageSum" resultType="int">
+        SELECT COUNT(id) FROM sys_sms_audit WHERE 1=1
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="status != null and  status != ''">
+            AND status = #{status}
+        </if>
+        AND operate_time &gt; #{begintime} AND operate_time &lt; #{endtime}
+    </select>
+
+    <select id="findCpAllAudit" resultType="com.gy.entity.SmsAudit">
+        SELECT * FROM (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_audit WHERE 1=1
+        <if test="cp != null and  cp != ''">
+            AND cp = #{cp}
+        </if>
+        <if test="status != null and  status != ''">
+            AND status = #{status}
+        </if>
+        AND operate_time &gt; #{begintime} AND operate_time &lt; #{endtime}) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE sys_sms_audit SET status='1' WHERE id=#{id}
+    </update>
+
+    <select id="findUserRoleId" resultType="String">
+        SELECT roleid FROM sys_user_role WHERE userid=#{id}
+    </select>
+
+    <select id="findIsAudit" resultType="com.gy.entity.SmsTemplate">
+        SELECT * FROM sys_sms_template WHERE template_id=#{templateId}
+    </select>
+
+    <select id="findCpByName" resultType="com.gy.entity.SmsCp">
+        SELECT * FROM sys_sms_cp WHERE account=#{cpName}
+    </select>
+
+    <select id="findAudit" resultType="com.gy.entity.SmsAudit">
+        SELECT * FROM sys_sms_audit WHERE id=#{id}
+    </select>
+
+    <select id="findRepeatSumit" resultType="int">
+        SELECT COUNT(*) FROM sys_sms_repeatsubmit WHERE cp=#{cp} AND channel=#{channel} AND status='0' AND submitdate=#{submitdate} AND taskid=#{taskid}
+    </select>
+
+    <insert id="insertSubmit">
+        INSERT INTO sys_sms_repeatsubmit(cp,channel,taskid,status,submitdate) VALUES(#{cp},#{channel},#{taskid},'0',#{submitdate})
+    </insert>
+
+    <select id="findAuditMobile" resultType="String">
+        SELECT mobile FROM sys_sms_audit WHERE id=#{id}
+    </select>
+
+    <delete id="deleteAuditById">
+        DELETE FROM sys_sms_audit WHERE id=#{id}
+    </delete>
+
+</mapper>

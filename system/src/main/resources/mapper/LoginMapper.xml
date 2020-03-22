@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsLoginDao">
+    <select id="findByUserName" resultType="com.gy.entity.SysUser">
+        SELECT * FROM sys_user WHERE username=#{username} AND password=#{password}
+    </select>
+
+    <select id="findSendNum" resultType="com.gy.entity.SmsDetail">
+        SELECT CONVERT(varchar(20), operate_time, 23) AS day_time,sum(send_count) AS day_sendnum  FROM sys_sms_detail WHERE operate_time BETWEEN dateadd(day,-7, CONVERT(varchar(20), GETDATE(), 23)) AND CONVERT(varchar(20), GETDATE(), 23) GROUP BY CONVERT(varchar(20), operate_time, 23) ORDER BY CONVERT(varchar(20), operate_time, 23)
+    </select>
+
+    <select id="findCpSendNum" resultType="com.gy.entity.SmsDetail">
+        SELECT CONVERT(varchar(20), operate_time, 23) AS day_time,sum(send_count) AS day_sendnum  FROM sys_sms_detail WHERE operate_time BETWEEN dateadd(day,-7, CONVERT(varchar(20), GETDATE(), 23)) AND CONVERT(varchar(20), GETDATE(), 23) AND cp=#{cpName} GROUP BY CONVERT(varchar(20), operate_time, 23) ORDER BY CONVERT(varchar(20), operate_time, 23)
+    </select>
+</mapper>

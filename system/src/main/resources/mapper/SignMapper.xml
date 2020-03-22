@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsSignDao">
+    <select id="signCount" resultType="int">
+        SELECT count(id) FROM sys_sms_sign
+    </select>
+    <select id="querySignAll" resultType="com.gy.entity.SmsSign">
+        SELECT id,sign_id,sign_name,cp,channel,operate_time FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_sign) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="fingSign" parameterType="com.gy.entity.SmsSign" resultType="int">
+        SELECT COUNT(id) FROM sys_sms_sign WHERE sign_name=#{signName} AND cp=#{cp} AND channel=#{channel}
+    </select>
+
+    <insert id="saveSign" parameterType="com.gy.entity.SmsSign">
+        INSERT INTO sys_sms_sign
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="signId != null">
+                sign_id,
+            </if>
+            <if test="signName != null">
+                sign_name,
+            </if>
+            <if test="cp != null">
+                cp,
+            </if>
+            <if test="channel != null">
+                channel,
+            </if>
+            <if test="operator != null">
+                operator,
+            </if>
+            <if test="operateTime != null">
+                operate_time,
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="signId != null">
+                #{signId,jdbcType=VARCHAR},
+            </if>
+            <if test="signName != null">
+                #{signName,jdbcType=VARCHAR},
+            </if>
+            <if test="cp != null">
+                #{cp,jdbcType=VARCHAR},
+            </if>
+            <if test="channel != null">
+                #{channel,jdbcType=VARCHAR},
+            </if>
+            <if test="operator != null">
+                #{operator,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findSignById" parameterType="Integer" resultType="com.gy.entity.SmsSign">
+        SELECT * FROM sys_sms_sign WHERE id=#{signId}
+    </select>
+
+    <update id="updatesign" parameterType="com.gy.entity.SmsSign">
+        UPDATE sys_sms_sign SET sign_id=#{signId},sign_name=#{signName},cp=#{cp},channel=#{channel} WHERE id=#{id}
+    </update>
+
+    <delete id="deletesign" parameterType="Integer">
+        DELETE FROM sys_sms_sign WHERE id=#{signId}
+    </delete>
+
+</mapper>

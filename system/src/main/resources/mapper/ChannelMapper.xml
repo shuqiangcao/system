@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsChannelDao">
+    <select id="findchannelPageSum" resultType="int">
+        SELECT count(id) FROM sys_sms_channel
+    </select>
+    <select id="findAllChannel" resultType="com.gy.entity.SmsChannel">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_channel) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <insert id="saveChannel" parameterType="com.gy.entity.SmsChannel">
+        INSERT INTO sys_sms_channel
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="account != null">
+                account,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="alias != null">
+                alias,
+            </if>
+            <if test="passWord != null">
+                password,
+            </if>
+            <if test="ip != null">
+                ip,
+            </if>
+            <if test="port != null">
+                port,
+            </if>
+            <if test="connections != null">
+                connections,
+            </if>
+            <if test="srcId != null">
+                src_id,
+            </if>
+            <if test="weight != null">
+                weight,
+            </if>
+            <if test="flowRate != null">
+                flow_rate,
+            </if>
+            <if test="accessMode != null">
+                access_mode,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="limitArea != null">
+                limit_area,
+            </if>
+            <if test="url != null">
+                url,
+            </if>
+            <if test="keyWord != null">
+                keyword,
+            </if>
+            <if test="operateTime != null">
+                operate_time
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="account != null">
+                #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="alias != null">
+                #{alias,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="passWord != null">
+                #{passWord,jdbcType=VARCHAR},
+            </if>
+            <if test="ip != null">
+                #{ip,jdbcType=VARCHAR},
+            </if>
+            <if test="port != null">
+                #{port,jdbcType=VARCHAR},
+            </if>
+            <if test="connections != null">
+                #{connections,jdbcType=INTEGER},
+            </if>
+            <if test="srcId != null">
+                #{srcId,jdbcType=VARCHAR},
+            </if>
+            <if test="weight != null">
+                #{weight,jdbcType=INTEGER},
+            </if>
+            <if test="flowRate != null">
+                #{flowRate,jdbcType=INTEGER},
+            </if>
+            <if test="accessMode != null">
+                #{accessMode,jdbcType=VARCHAR},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=VARCHAR},
+            </if>
+            <if test="limitArea != null">
+                #{limitArea,jdbcType=VARCHAR},
+            </if>
+            <if test="url != null">
+                #{url,jdbcType=VARCHAR},
+            </if>
+            <if test="keyWord != null">
+                #{keyWord,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findChannelByNameAndaccount" parameterType="String" resultType="com.gy.entity.SmsChannel">
+        SELECT * FROM sys_sms_channel WHERE name=#{name} AND account=#{account}
+    </select>
+
+    <select id="findChannelById" parameterType="Integer" resultType="com.gy.entity.SmsChannel">
+        SELECT * FROM sys_sms_channel WHERE id=#{channelId}
+    </select>
+
+    <delete id="deleteChannelById">
+        DELETE FROM sys_sms_channel WHERE id=#{channelId}
+    </delete>
+
+    <update id="updateChannel" parameterType="com.gy.entity.SmsChannel">
+        UPDATE sys_sms_channel SET account=#{account},alias=#{alias},name=#{name},password=#{passWord},ip=#{ip},connections=#{connections},src_id=#{srcId},weight=#{weight},flow_rate=#{flowRate},access_mode=#{accessMode},port=#{port},price=#{price},limit_area=#{limitArea},url=#{url},keyword=#{keyWord} WHERE id=#{id}
+    </update>
+</mapper>

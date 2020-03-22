@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsCpPayDao">
+    <select id="findCppageSum" resultType="int">
+        SELECT count(id) FROM sys_sms_cppay WHERE 1=1
+        <if test="begintime != '' and begintime != null">
+            AND operate_time &gt; #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null">
+            AND account = #{cp}
+        </if>
+    </select>
+    <select id="findPayList" resultType="com.gy.entity.SmsRechargeRecord">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_cppay WHERE 1=1
+        <if test="begintime != '' and begintime != null">
+            AND operate_time &gt; #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null">
+            AND account = #{cp}
+        </if>
+        ) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findConsumepageSum" resultType="int">
+        SELECT count(id) FROM sys_sms_cp_consume WHERE 1=1
+        <if test="begintime != '' and begintime != null">
+            AND operate_time &gt; #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null">
+            AND account = #{cp}
+        </if>
+    </select>
+
+    <select id="findConsumeList" resultType="com.gy.entity.SmsCpConsume">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,account,balance,before_balance,consume_money,operate_time from sys_sms_cp_consume WHERE 1=1
+        <if test="begintime != '' and begintime != null">
+            AND operate_time &gt; #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null">
+            AND account = #{cp}
+        </if>
+        ) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.UrlDao">
+    <select id="findShortUrl" resultType="int">
+        SELECT COUNT(id) FROM shorturl WHERE param=#{shortStr}
+    </select>
+    <insert id="insertData" parameterType="com.gy.entity.ShortUrl">
+        INSERT INTO sys_shorturl(longurl,shorturl,param,sinaurl) VALUES(#{longUrl},#{shortUrl},#{param},#{sinaUrl})
+    </insert>
+    <insert id="insertMobileUrl" parameterType="java.util.List">
+        INSERT INTO mobileurl(mobile,longurl,shorturl,param) 
+        VALUES
+        <foreach collection="shortUrls" item="shorturl" separator=",">
+            (#{shorturl.mobile},#{shorturl.longUrl},#{shorturl.shortUrl},#{shorturl.param})
+        </foreach>
+    </insert>
+
+    <update id="updateUrl">
+        UPDATE sys_shorturl SET sinaurl=#{sinaurl} WHERE shorturl=#{shorturl}
+    </update>
+
+    <select id="findshorturl" resultType="com.gy.entity.ShortUrl">
+        SELECT TOP 1 * FROM sys_shorturl ORDER BY id DESC
+    </select>
+</mapper>

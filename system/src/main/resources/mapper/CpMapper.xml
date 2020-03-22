@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsCpDao">
+    <select id="findPageSum" resultType="int">
+        SELECT count(id) FROM sys_sms_cp
+    </select>
+    <select id="findAllCp" resultType="com.gy.entity.SmsCp">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_cp) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <insert id="saveCp" parameterType="com.gy.entity.SmsCp">
+        INSERT INTO sys_sms_cp
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="account != null">
+                account,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="passWord != null">
+                password,
+            </if>
+            <if test="balance != null">
+                balance,
+            </if>
+            <if test="url != null">
+                url,
+            </if>
+            <if test="connections != null">
+                connections,
+            </if>
+            <if test="srcId != null">
+                src_id,
+            </if>
+            <if test="weight != null">
+                weight,
+            </if>
+            <if test="flowRate != null">
+                flow_rate,
+            </if>
+            <if test="accessMode != null">
+                access_mode,
+            </if>
+            <if test="whiteList != null">
+                white_list,
+            </if>
+            <if test="operateTime != null">
+                operate_time
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="account != null">
+                #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="passWord != null">
+                #{passWord,jdbcType=VARCHAR},
+            </if>
+            <if test="balance != null">
+                #{balance,jdbcType=NUMERIC},
+            </if>
+            <if test="url != null">
+                #{url,jdbcType=VARCHAR},
+            </if>
+            <if test="connections != null">
+                #{connections,jdbcType=INTEGER},
+            </if>
+            <if test="srcId != null">
+                #{srcId,jdbcType=VARCHAR},
+            </if>
+            <if test="weight != null">
+                #{weight,jdbcType=INTEGER},
+            </if>
+            <if test="flowRate != null">
+                #{flowRate,jdbcType=INTEGER},
+            </if>
+            <if test="accessMode != null">
+                #{accessMode,jdbcType=VARCHAR},
+            </if>
+            <if test="whiteList != null">
+                #{whiteList,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findCpByName" parameterType="String" resultType="com.gy.entity.SmsCp">
+        SELECT * FROM sys_sms_cp WHERE name=#{name}
+    </select>
+
+    <select id="findCpById" parameterType="Integer" resultType="com.gy.entity.SmsCp">
+        SELECT * FROM sys_sms_cp WHERE id=#{cpId}
+    </select>
+
+    <update id="updateBalance" parameterType="com.gy.entity.SmsCp">
+        UPDATE sys_sms_cp SET balance=#{money} WHERE account=#{name} AND name=#{account}
+    </update>
+
+    <insert id="insertRecord">
+        INSERT INTO sys_sms_cppay(account,name,balance,after_balance,recharge_money,operator) VALUES(#{account},#{name},#{balance},#{afterBalance},#{rechargeMoney},#{operator})
+    </insert>
+
+    <delete id="deleteCp">
+        DELETE FROM sys_sms_cp WHERE id=#{cpId}
+    </delete>
+
+    <update id="updateCp" parameterType="com.gy.entity.SmsCp">
+        UPDATE sys_sms_cp SET account=#{account},name=#{name},password=#{passWord},url=#{url},connections=#{connections},src_id=#{srcId},weight=#{weight},flow_rate=#{flowRate},access_mode=#{accessMode},white_list=#{whiteList} WHERE id=#{id}
+    </update>
+</mapper>

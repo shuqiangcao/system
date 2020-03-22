@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsUserDao">
+    <select id="findUserCount" resultType="int">
+        SELECT count(id) FROM sys_user
+    </select>
+    <select id="findAllUser" resultType="com.gy.entity.SysUser">
+        SELECT id,userName,telePhone,email,status,comp FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_user) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <insert id="saveUser" parameterType="com.gy.entity.SysUser">
+        INSERT INTO sys_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userName != null">
+                username,
+            </if>
+            <if test="passWord != null">
+                password,
+            </if>
+            <if test="telePhone != null">
+                telephone,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="remark != null">
+                remark,
+            </if>
+            <if test="operator != null">
+                operator,
+            </if>
+            <if test="operateTime != null">
+                operate_time,
+            </if>
+            <if test="comp != null">
+                comp
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="userName != null">
+                #{userName,jdbcType=VARCHAR},
+            </if>
+            <if test="passWord != null">
+                #{passWord,jdbcType=VARCHAR},
+            </if>
+            <if test="telePhone != null">
+                #{telePhone,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null">
+                #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="operator != null">
+                #{operator,jdbcType=VARCHAR},
+            </if>
+            <if test="operateTime != null">
+                #{operateTime,jdbcType=DATETIME},
+            </if>
+            <if test="comp != null">
+                #{comp,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findUserById" parameterType="Integer" resultType="com.gy.entity.SysUser">
+        SELECT * FROM sys_user WHERE id=#{userId}
+    </select>
+
+    <update id="updateSysUser" parameterType="com.gy.entity.SysUser">
+        UPDATE sys_user SET username=#{userName},password=#{passWord},telephone=#{telePhone},email=#{email},status=#{status},comp=#{comp} WHERE id=#{id}
+    </update>
+
+    <delete id="deleteSysUser" parameterType="Integer">
+        DELETE FROM sys_user WHERE id=#{userId}
+    </delete>
+
+    <delete id="deleteUserRole" parameterType="Integer">
+        DELETE FROM sys_user_role WHERE userid=#{userId}
+    </delete>
+
+    <select id="findByUsername" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM sys_user WHERE username=#{userName}
+    </select>
+
+    <insert id="insertUserRoles">
+        INSERT INTO sys_user_role(userid,roleid) VALUES
+        <foreach collection="roleids" item="roleid" separator=",">
+            ( #{userId},#{roleid})
+        </foreach>
+    </insert>
+
+    <delete id="deleteUserRoles">
+        DELETE FROM sys_user_role WHERE userid=#{userId} AND roleid in
+        <foreach collection="roleids" item="roleid" open="(" close=")" separator=",">
+            #{roleid}
+        </foreach>
+    </delete>
+
+    <select id="findRoleIdsByUserId" parameterType="Integer" resultType="Integer">
+        SELECT roleid FROM sys_user_role WHERE userid=#{userId}
+    </select>
+</mapper>

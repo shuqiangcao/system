@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.SmsStatisticsDao">
+    <select id="findPageSum" resultType="int">
+        SELECT COUNT(*) FROM sys_sms_info WHERE 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+    </select>
+
+    <select id="findAllrecord" resultType="com.gy.entity.SmsInfo">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_info WHERE 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        ) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findSendTime" resultType="java.util.Date">
+        SELECT TOP 1 operate_time FROM sys_sms_detail WHERE info_id=#{infoId} ORDER BY operate_time DESC
+    </select>
+
+    <select id="findNotifyTime" resultType="java.util.Date">
+        SELECT TOP 1 operate_time FROM sys_sms_notify WHERE info_id=#{infoId} ORDER BY operate_time DESC
+    </select>
+
+    <select id="findSendSuccessCount" resultType="int">
+        SELECT COUNT(*) FROM sys_sms_notify WHERE info_id=#{infoId} AND result='0'
+    </select>
+
+    <select id="findChannel" resultType="com.gy.entity.SmsChannel">
+        SELECT * FROM sys_sms_channel
+    </select>
+
+    <select id="findCpPageSum" resultType="int">
+        SELECT COUNT(*) FROM sys_sms_info WHERE 1=1
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        AND operate_time &gt; #{begintime} AND operate_time &lt; #{endtime}
+    </select>
+
+    <select id="findCpAllRecord" resultType="com.gy.entity.SmsInfo">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from sys_sms_info WHERE 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        ) t)tt where temprownumber &gt; ${(pageNum - 1) * pageSize}
+    </select>
+
+
+    <select id="findSendCountPageSum" resultType="int">
+          SELECT COUNT(*) FROM (SELECT CONVERT(varchar(100), operate_time, 23) as way,SUM(send_count) as send_num FROM sys_sms_info WHERE 1=1
+            <if test="begintime != '' and begintime != null ">
+                AND operate_time > #{begintime}
+            </if>
+            <if test="endtime != '' and endtime != null ">
+                AND operate_time &lt; #{endtime}
+            </if>
+            <if test="cp != '' and cp != null ">
+                AND cp = #{cp}
+            </if>
+            GROUP BY CONVERT(varchar(100), operate_time, 23)
+          ) tt
+    </select>
+
+    <select id="findAllSendCount" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT CONVERT(varchar(100), operate_time, 23) as way,SUM(send_count) as send_num,
+        SUM(blacklist_count)+SUM(channel_error_count)+SUM(count_limit_count)+SUM(flow_limit_count)+SUM(maskword_count)+SUM(mobile_error_count)+SUM(money_limit_count)+SUM(province_limit_count)+SUM(template_count) as filter_num
+        FROM sys_sms_info where 1=1
+            <if test="begintime != '' and begintime != null ">
+                AND operate_time > #{begintime}
+            </if>
+            <if test="endtime != '' and endtime != null ">
+                AND operate_time &lt; #{endtime}
+            </if>
+            <if test="cp != '' and cp != null ">
+                AND cp = #{cp}
+            </if>
+            GROUP BY CONVERT(varchar(100), operate_time, 23) ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findPageSumByWay" resultType="int">
+        SELECT COUNT(*) FROM (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,SUM(send_count) as send_num FROM sys_sms_info WHERE 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel LIKE '%'+#{channel}+'%'
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+           channel
+        </if>
+        ) tt
+    </select>
+
+    <select id="findSendSumByWay" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,SUM(send_count) as send_num,
+        SUM(blacklist_count)+SUM(channel_error_count)+SUM(count_limit_count)+SUM(flow_limit_count)+SUM(maskword_count)+SUM(mobile_error_count)+SUM(money_limit_count)+SUM(province_limit_count)+SUM(template_count) as filter_num
+        FROM sys_sms_info where 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel LIKE '%'+#{channel}+'%'
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+         ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findSubmitCountPageSum" resultType="int">
+        SELECT COUNT(*) FROM (SELECT CONVERT(varchar(100), operate_time, 23) as way,SUM(submit_count) as send_num FROM sys_sms_info WHERE 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        GROUP BY CONVERT(varchar(100), operate_time, 23)
+        ) tt
+    </select>
+
+    <select id="findSubmitCount" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT CONVERT(varchar(100), operate_time, 23) as way,SUM(submit_count) as send_num
+        FROM sys_sms_info where 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        GROUP BY CONVERT(varchar(100), operate_time, 23) ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findCpSubmitCountPageSum" resultType="int">
+        SELECT COUNT(*) FROM (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,SUM(submit_count) as send_num FROM sys_sms_info WHERE 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel LIKE '%'+#{channel}+'%'
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        ) tt
+    </select>
+
+    <select id="findCpSubmitCount" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,SUM(submit_count) as send_num  FROM sys_sms_info where 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel LIKE '%'+#{channel}+'%'
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findSuccessCountPageSum" resultType="int">
+        SELECT COUNT(*) FROM (SELECT CONVERT(varchar(100), operate_time, 23) as way,COUNT(*) as send_num FROM sys_sms_notify WHERE 1=1 AND result='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        GROUP BY CONVERT(varchar(100), operate_time, 23)
+        ) tt
+    </select>
+
+    <select id="findSuccessCount" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT CONVERT(varchar(100), operate_time, 23) as way,COUNT(*) as send_num  FROM sys_sms_notify WHERE 1=1 AND result='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        GROUP BY CONVERT(varchar(100), operate_time, 23) ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findSuccPageSumByWay" resultType="int">
+        SELECT COUNT(*) FROM (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,COUNT(*) as send_num FROM sys_sms_notify WHERE 1=1 AND result='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel = #{channel}
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        ) tt
+    </select>
+
+    <select id="findSuccCount" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,COUNT(*) as send_num  FROM sys_sms_notify where 1=1 AND result='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel = #{channel}
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findFailCountPageSum" resultType="int">
+        SELECT COUNT(*) FROM (SELECT CONVERT(varchar(100), operate_time, 23) as way,COUNT(*) as send_num FROM sys_sms_notify WHERE 1=1 AND result != '0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        GROUP BY CONVERT(varchar(100), operate_time, 23)
+        ) tt
+    </select>
+
+    <select id="findFailCount" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT CONVERT(varchar(100), operate_time, 23) as way,COUNT(*) as send_num  FROM sys_sms_notify WHERE 1=1 AND result !='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        GROUP BY CONVERT(varchar(100), operate_time, 23) ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+
+    <select id="findFailPageSumByWay" resultType="int">
+        SELECT COUNT(*) FROM (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,COUNT(*) as send_num FROM sys_sms_notify WHERE 1=1 AND result !='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel = #{channel}
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        ) tt
+    </select>
+
+    <select id="findFailCountByWay" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,COUNT(*) as send_num  FROM sys_sms_notify where 1=1 AND result !='0'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel = #{channel}
+        </if>
+        GROUP BY
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+
+    <select id="findStatusPageSum" resultType="int">
+        SELECT COUNT(*) FROM (SELECT * FROM sys_sms_info WHERE 1=1 AND send_mobile LIKE '%'+#{mobile}+'%'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cpName != '' and cpName != null ">
+            AND cp = #{cpName}
+        </if>
+        ) tt
+    </select>
+
+    <select id="findMobileStatus" resultType="com.gy.entity.SmsMobileStatus">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT *  FROM sys_sms_info WHERE 1=1 AND send_mobile LIKE '%'+#{mobile}+'%'
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cpName != '' and cpName != null ">
+            AND cp = #{cpName}
+        </if>
+        ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findMobileSendTime" resultType="String">
+        SELECT operate_time FROM sys_sms_detail WHERE info_id=#{infoId} AND send_mobile LIKE '%'+#{mobile}+'%'
+    </select>
+
+    <select id="findMobileNotify" resultType="com.gy.entity.SmsNotify">
+        SELECT * FROM sys_sms_notify WHERE info_id=#{infoId} AND mobile=#{mobile}
+    </select>
+
+    <select id="findInfoMsgPageSum" resultType="int">
+        SELECT COUNT(id) FROM sys_sms_notify WHERE info_id=#{infoId}
+    </select>
+
+    <select id="findInfoMsg" resultType="com.gy.entity.SmsNotify">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT *  FROM sys_sms_notify WHERE info_id=#{infoId}
+        ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findtotalPageByStatus" resultType="int">
+        SELECT COUNT(id) FROM sys_sms_notify WHERE 1=1
+        <if test="infoId != '' and infoId != null">
+            AND info_id=#{infoId}
+        </if>
+        <if test='result != "" and result != null and result == "1"'>
+            AND result !='0'
+        </if>
+        <if test='result != "" and result != null and result == "0"'>
+            AND result ='0'
+        </if>
+        <if test="mobile != '' and mobile != null">
+            AND mobile=#{mobile}
+        </if>
+    </select>
+
+    <select id="findInfoMsgByStatus" resultType="com.gy.entity.SmsNotify">
+        SELECT * FROM  (select row_number()over(order by tempcolumn)temprownumber,*from (select top ${pageNum * pageSize} tempcolumn=0,* from (SELECT *  FROM sys_sms_notify WHERE 1=1
+        <if test="infoId != '' and infoId != null">
+            AND info_id=#{infoId}
+        </if>
+        <if test='result != "" and result != null and result == "1"'>
+            AND result !='0'
+        </if>
+        <if test='result != "" and result != null and result == "0"'>
+            AND result ='0'
+        </if>
+        <if test="mobile != '' and mobile != null">
+            AND mobile=#{mobile}
+        </if>
+        ) aa) t)tt where temprownumber >${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="findinfoId" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT
+        <if test="byway == 'operate_time'">
+            CONVERT(varchar(100), operate_time, 23)
+        </if>
+        <if test="byway == 'name'">
+            cp
+        </if>
+        <if test="byway == 'channel'">
+            channel
+        </if>
+        as way,id as id  FROM sys_sms_info where 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cp != '' and cp != null ">
+            AND cp = #{cp}
+        </if>
+        <if test="channel != '' and channel != null ">
+            AND channel LIKE '%'+#{channel}+'%'
+        </if>
+    </select>
+
+    <select id="findsuccNum" resultType="int">
+        SELECT COUNT(*) FROM sys_sms_notify WHERE info_id=#{id} AND result='0'
+    </select>
+
+    <select id="findfailNum" resultType="int">
+        SELECT COUNT(*) FROM sys_sms_notify WHERE info_id=#{id} AND result!='0'
+    </select>
+
+    <select id="findSmsSendinfoId" resultType="com.gy.entity.SmsSendCountPage">
+        SELECT CONVERT(varchar(100), operate_time, 23) as way,id as id  FROM sys_sms_info where 1=1
+        <if test="begintime != '' and begintime != null ">
+            AND operate_time > #{begintime}
+        </if>
+        <if test="endtime != '' and endtime != null ">
+            AND operate_time &lt; #{endtime}
+        </if>
+        <if test="cpName != '' and cpName != null ">
+            AND cp = #{cpName}
+        </if>
+    </select>
+
+    <select id="findMobileFilter" resultType="java.util.Map">
+        SELECT blacklist_count,channel_error_count,count_limit_count,flow_limit_count,maskword_count,mobile_error_count,money_limit_count,province_limit_count,template_count,blacklist_count+channel_error_count+count_limit_count+flow_limit_count+maskword_count+mobile_error_count+money_limit_count+province_limit_count+template_count as filter_num FROM sys_sms_info WHERE id=#{infoId}
+    </select>
+
+    <select id="findExportMsg" resultType="com.gy.entity.SmsNotify">
+        SELECT info_id,mobile,city,carrier,result,cp,channel FROM sys_sms_notify WHERE info_id=#{infoId}
+    </select>
+
+</mapper>

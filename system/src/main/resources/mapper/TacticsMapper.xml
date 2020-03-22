@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gy.dao.TacticsDao">
+    <select id="findMaskword" resultType="map">
+        SELECT word,operate_time FROM sys_sms_maskword WHERE word=#{maskword}
+    </select>
+
+    <insert id="saveword">
+        INSERT INTO sys_sms_maskword(word) VALUES(#{maskword})
+    </insert>
+</mapper>
