@@ -30,6 +30,7 @@ public class TxtTest1 {
             System.out.println(split.length);
 
         }catch(Exception e){
+            String message = e.getMessage();
             e.printStackTrace();
         }
     }
